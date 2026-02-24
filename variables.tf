@@ -70,9 +70,14 @@ variable "values_yaml_filename" {
 variable "glue_crawler_name" {
   description = "The zesty crawler name"
   type = string
-  default = "zesty_cur_glule_crawler"
+  default = "zesty_cur_glue_crawler"
 }
 
+variable "storage_class_name" {
+  description = "Storage class name of the cluster"
+  type        = string
+  default     = "ebs-sc"
+}
 variable "create_values_local_file" {
   description = "Enables the creation of a local values.yaml file"
   type        = bool

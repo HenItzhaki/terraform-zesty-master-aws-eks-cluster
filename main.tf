@@ -238,6 +238,7 @@ resource "aws_s3_bucket_policy" "cur_bucket_policy" {
     ]
   })
 }
+
 resource "aws_iam_role" "glue_crawler_role" {
   name = var.glue_crawler_name
 
@@ -308,7 +309,7 @@ resource "aws_glue_crawler" "zesty_cur_crawler" {
   role          = aws_iam_role.glue_crawler_role.arn
   database_name = aws_glue_catalog_database.zesty_cur_db.name
   description   = "Crawler to auto-generate CUR table schema"
-  
+
   catalog_target {
     database_name = aws_glue_catalog_database.zesty_cur_db.name
     tables = [aws_glue_catalog_table.cur.name]
@@ -320,6 +321,8 @@ resource "aws_glue_crawler" "zesty_cur_crawler" {
     delete_behavior = "LOG"
     update_behavior = "UPDATE_IN_DATABASE"
   }
+  depends_on = [aws_glue_catalog_table.cur]
+
 }
 
 resource "aws_cur_report_definition" "zesty_cur" {
@@ -387,6 +390,7 @@ resource "aws_glue_catalog_table" "cur" {
 
 resource "aws_athena_workgroup" "zesty_athena" {
   name = var.athena_workgroup
+  force_destroy = true
 
   configuration {
     enforce_workgroup_configuration = true
@@ -397,6 +401,12 @@ resource "aws_athena_workgroup" "zesty_athena" {
   }
 }
 
+resource "null_resource" "wait_for_iam" {
+  provisioner "local-exec" {
+    command = "sleep 10"
+  }
+  depends_on = [aws_iam_role_policy.zesty_policy]
+}
 
 resource "zesty_account" "result" {
   account = {
@@ -405,6 +415,7 @@ resource "zesty_account" "result" {
     cloud_provider = "AWS"
     role_arn       = aws_iam_role.zesty_iam_role.arn
     external_id    = random_uuid.zesty_external_id.result
+    storage_class_name = var.storage_class_name
     products       = var.products
     cur = {
       s3_bucket       = aws_s3_bucket.zesty_cur_bucket.bucket
@@ -422,7 +433,7 @@ resource "zesty_account" "result" {
 
     }
   }
-  depends_on = [aws_iam_role_policy.zesty_policy]
+  depends_on = [aws_iam_role_policy.zesty_policy, null_resource.wait_for_iam]
 }
 
 resource "local_file" "kompass_values" {
