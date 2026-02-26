@@ -1,11 +1,11 @@
 # Terraform module to connect an AWS EKS cluster to Zesty Kompass
 
-This module onboards an AWS master account to Zesty, creates the nececessry resources for a zesty master account,(Cur report, Athena database, Glue crawler).
+This module onboards an AWS master account to Zesty, creates the nececessry resources for a zesty master account, (Cur report, Athena database, Glue crawler).  
 Then you can connect an AWS EKS cluster to Zesty Kompass.
 
 ## Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/install) 0.13+
+- [Terraform](https://developer.hashicorp.com/terraform/install) 1.3.0 +
 
 ## Providers
 

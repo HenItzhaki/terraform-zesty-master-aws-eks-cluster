@@ -61,6 +61,12 @@ variable "athena_workgroup" {
   default     = "ZestyCur"
 }
 
+variable "athena_result_directory" {
+  description = "Athena query result directory in s3"
+  type        = string
+  default     = "zesty-athena-results"
+}
+
 variable "values_yaml_filename" {
   description = "Path of values.yaml (default is the current working directory)"
   type        = string

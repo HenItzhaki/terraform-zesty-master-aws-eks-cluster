@@ -308,7 +308,7 @@ resource "aws_glue_crawler" "zesty_cur_crawler" {
   name          = var.glue_crawler_name
   role          = aws_iam_role.glue_crawler_role.arn
   database_name = aws_glue_catalog_database.zesty_cur_db.name
-  description   = "Crawler to auto-generate CUR table schema"
+  description   = "Crawler to auto-generate Zesty CUR table schema"
 
   catalog_target {
     database_name = aws_glue_catalog_database.zesty_cur_db.name
@@ -320,6 +320,9 @@ resource "aws_glue_crawler" "zesty_cur_crawler" {
   schema_change_policy {
     delete_behavior = "LOG"
     update_behavior = "UPDATE_IN_DATABASE"
+  }
+  lifecycle {
+    ignore_changes = [configuration]
   }
   depends_on = [aws_glue_catalog_table.cur]
 
@@ -333,7 +336,7 @@ resource "aws_cur_report_definition" "zesty_cur" {
 
   s3_bucket = aws_s3_bucket.zesty_cur_bucket.bucket
   s3_region = local.region
-  s3_prefix = "cur/${var.cur_report_name}"
+  s3_prefix = "cur"
   additional_schema_elements = [
     "RESOURCES",
     "SPLIT_COST_ALLOCATION_DATA"
@@ -364,7 +367,7 @@ resource "aws_glue_catalog_table" "cur" {
     "projection.year.range"     = "2000,2100"
     "projection.month.type"     = "integer"
     "projection.month.range"    = "1,12"
-    "storage.location.template" = "s3://${aws_s3_bucket.zesty_cur_bucket.bucket}/cur/${var.cur_report_name}/${var.cur_report_name}/year=$${year}/month=$${month}/"
+    "storage.location.template" = "s3://${aws_s3_bucket.zesty_cur_bucket.bucket}/${aws_cur_report_definition.zesty_cur.s3_prefix}/${var.cur_report_name}/${var.cur_report_name}/year=$${year}/month=$${month}/"
 
   }
   partition_keys {
@@ -378,7 +381,7 @@ resource "aws_glue_catalog_table" "cur" {
   }
 
   storage_descriptor {
-    location      = "s3://${aws_s3_bucket.zesty_cur_bucket.bucket}/cur/${var.cur_report_name}/${var.cur_report_name}/"
+    location      = "s3://${aws_s3_bucket.zesty_cur_bucket.bucket}/${aws_cur_report_definition.zesty_cur.s3_prefix}/${var.cur_report_name}/${var.cur_report_name}/"
     input_format  = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
 
@@ -396,7 +399,7 @@ resource "aws_athena_workgroup" "zesty_athena" {
     enforce_workgroup_configuration = true
 
     result_configuration {
-      output_location = "s3://${aws_s3_bucket.zesty_cur_bucket.bucket}/athena-results/"
+      output_location = "s3://${aws_s3_bucket.zesty_cur_bucket.bucket}/${var.athena_result_directory}/"
     }
   }
 }
@@ -441,9 +444,4 @@ resource "local_file" "kompass_values" {
   content    = local.values_content
   filename   = var.values_yaml_filename
   depends_on = [zesty_account.result]
-}
-
-moved {
-  from = local_file.kompass_values
-  to   = local_file.kompass_values[1]
 }
