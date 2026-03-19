@@ -93,8 +93,8 @@ resource "helm_release" "kompass" {
 ## Testing
 
 - Run `make -C tests validate` to validate all Terraform examples without configuring remote backends
-- Run `make -C tests test-tf` to execute the mocked `terraform test` suites for the multi-cluster Kompass examples
-- Run `make -C tests validate-tg` to validate the Terragrunt HCL examples
+- Run `make -C tests test-tf` to execute the mocked `terraform test` suites for the examples
+- Run `make -C tests validate-tg` to validate the Terragrunt examples with dependency mocks
 - Run `pre-commit run --all-files` to apply `terraform fmt`, `terraform validate`, and recursive `tflint`
 
 ## Notes
